@@ -1,0 +1,38 @@
+{
+  "name": "chocotools",
+  "displayName": "Choco Tools",
+  "description": "Useful tools that are developed by chocolateimage",
+  "version": "0.0.1",
+  "publisher": "chocolateimage",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chocolateimage/chocotools.git"
+  },
+  "categories": [
+    "Formatters",
+    "Other"
+  ],
+  "icon": "icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [{
+      "command": "chocotools.convertCJSToESM",
+      "title": "Convert current file from CommonJS to ESM"
+    }]
+  },
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.96.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "eslint": "^9.16.0"
+  }
+}
