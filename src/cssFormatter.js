@@ -56,6 +56,9 @@ function getRuleOrder() {
         for (const j of filtered) {
             ruleOrder.push(j)
         }
+        if (!ruleOrder.includes(i)) {
+            ruleOrder.push(i)
+        }
     }
 
     return ruleOrder
