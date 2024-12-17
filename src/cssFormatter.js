@@ -102,6 +102,8 @@ function provideDocumentFormattingEdits(document, options, token) {
     let ruleStartLine = null;
     let properties = {};
     let restProperties = [];
+    let currentProperty = null;
+    let currentPropertyFull = "";
 
     for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
         const line = document.lineAt(lineIndex);
@@ -182,17 +184,38 @@ function provideDocumentFormattingEdits(document, options, token) {
             continue; // Skip line as else it's processing the "}" line as inside of a rule
         }
 
-        const property = line.text.split(':')[0].trim()
+        edits.push(vscode.TextEdit.delete(line.rangeIncludingLineBreak))
 
-        if (trim == "") {
+        if (trim == "") continue; // Don't do anything with empty lines
 
-        } else if (ruleOrder.includes(property)) {
-            properties[property] = line.text;
+        if (currentProperty == null) {
+            currentProperty = line.text.split(':')[0].trim()
         } else {
-            restProperties.push(line.text);
+            currentPropertyFull += "\n"
         }
 
-        edits.push(vscode.TextEdit.delete(line.rangeIncludingLineBreak))
+        let endOfLine = false;
+
+        for (const character of line.text) {
+            currentPropertyFull += character;
+
+            // End of property/line, add to property list
+            if (character == ";") {
+                endOfLine = true;
+            }
+        }
+
+        if (endOfLine) {
+            if (ruleOrder.includes(currentProperty)) {
+                properties[currentProperty] = currentPropertyFull;
+            } else {
+                restProperties.push(currentPropertyFull);
+            }
+            currentPropertyFull = "";
+            currentProperty = null;
+        }
+
+
     }
 
     if (htmlLike && isProcessingCSS) {
