@@ -90,6 +90,7 @@ function showCSSFormatError(info) {
      * @returns {vscode.ProviderResult<vscode.TextEdit[]>}
      */
 function provideDocumentFormattingEdits(document, options, token) {
+    const config = vscode.workspace.getConfiguration("editor", document);
     const ruleOrder = getRuleOrder()
 
     const edits = []
@@ -227,6 +228,17 @@ function provideDocumentFormattingEdits(document, options, token) {
         showCSSFormatError("The } is missing at the end of the CSS style")
         return []
     }
+
+    // Run Prettier after formatting the document
+    setTimeout(async () => {
+        const hasPrettier = (await vscode.commands.getCommands(true)).includes("prettier.forceFormatDocument")
+        if (!hasPrettier) return;
+
+        await vscode.commands.executeCommand("prettier.forceFormatDocument")
+        if (config.get("formatOnSave")) {
+            await vscode.commands.executeCommand("workbench.action.files.saveWithoutFormatting");
+        }
+    }, 50);
 
     return edits
 }
