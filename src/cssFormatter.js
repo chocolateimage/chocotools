@@ -135,6 +135,27 @@ function provideDocumentFormattingEdits(document, options, token) {
     let restComments = [];
     let currentComment = "";
 
+    function endOfRule() {
+        if (currentProperty == null) return;
+
+        // In case the rule wasn't ended correctly a semicolon is added
+        if (!currentPropertyFull.endsWith(";")) {
+            currentPropertyFull += ";";
+        }
+
+        if (currentComment != "") {
+            commentsAttachedToProperties[currentPropertyFull] = currentComment;
+            currentComment = "";
+        }
+        if (ruleOrder.includes(currentProperty)) {
+            properties[currentProperty] = currentPropertyFull;
+        } else {
+            restProperties.push(currentPropertyFull);
+        }
+        currentPropertyFull = "";
+        currentProperty = null;
+    }
+
     for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
         const line = document.lineAt(lineIndex);
         const trim = line.text.trim();
@@ -169,6 +190,8 @@ function provideDocumentFormattingEdits(document, options, token) {
         if (!isInRule) continue;
 
         if (trim.endsWith("}")) {
+            endOfRule();
+
             if (currentComment != "") {
                 restComments.push(currentComment);
                 currentComment = "";
@@ -280,17 +303,7 @@ function provideDocumentFormattingEdits(document, options, token) {
         }
 
         if (endOfLine) {
-            if (currentComment != "") {
-                commentsAttachedToProperties[currentPropertyFull] = currentComment;
-                currentComment = "";
-            }
-            if (ruleOrder.includes(currentProperty)) {
-                properties[currentProperty] = currentPropertyFull;
-            } else {
-                restProperties.push(currentPropertyFull);
-            }
-            currentPropertyFull = "";
-            currentProperty = null;
+            endOfRule();
         }
     }
 
