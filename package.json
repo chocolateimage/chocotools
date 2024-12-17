@@ -24,7 +24,18 @@
     "commands": [{
       "command": "chocotools.convertCJSToESM",
       "title": "Convert current file from CommonJS to ESM"
-    }]
+    }],
+    "configuration": {
+      "title": "Choco Tools",
+      "properties": {
+        "chocotools.runPrettier": {
+          "type": "boolean",
+          "default": true,
+          "description": "Runs Prettier after formatting if installed",
+          "scope": "language-overridable"
+        }
+      }
+    }
   },
   "scripts": {
     "lint": "eslint ."

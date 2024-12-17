@@ -90,7 +90,9 @@ function showCSSFormatError(info) {
      * @returns {vscode.ProviderResult<vscode.TextEdit[]>}
      */
 function provideDocumentFormattingEdits(document, options, token) {
-    const config = vscode.workspace.getConfiguration("editor", document);
+    const editorConfig = vscode.workspace.getConfiguration("editor", document);
+    const config = vscode.workspace.getConfiguration("chocotools", document);
+
     const ruleOrder = getRuleOrder()
 
     const edits = []
@@ -230,15 +232,17 @@ function provideDocumentFormattingEdits(document, options, token) {
     }
 
     // Run Prettier after formatting the document
-    setTimeout(async () => {
-        const hasPrettier = (await vscode.commands.getCommands(true)).includes("prettier.forceFormatDocument")
-        if (!hasPrettier) return;
+    if (config.get("runPrettier")) {
+        setTimeout(async () => {
+            const hasPrettier = (await vscode.commands.getCommands(true)).includes("prettier.forceFormatDocument")
+            if (!hasPrettier) return;
 
-        await vscode.commands.executeCommand("prettier.forceFormatDocument")
-        if (config.get("formatOnSave")) {
-            await vscode.commands.executeCommand("workbench.action.files.saveWithoutFormatting");
-        }
-    }, 50);
+            await vscode.commands.executeCommand("prettier.forceFormatDocument")
+            if (editorConfig.get("formatOnSave")) {
+                await vscode.commands.executeCommand("workbench.action.files.saveWithoutFormatting");
+            }
+        }, 50);
+    }
 
     return edits
 }
