@@ -19,15 +19,15 @@ function getRuleOrder() {
         null,
         // DISPLAY AND VISIBILITY
         "display",
+        "flex",
         "justify-content",
         "align-items",
         "align-self",
+        null,
         "opacity",
         "transform",
         null,
-        "flex",
         // CLIPPING
-        null,
         "overflow",
         "clip",
         null,
@@ -37,13 +37,30 @@ function getRuleOrder() {
         null,
         // BOX MODEL (FROM OUTSIDE IN)
         "margin",
+        "margin-top",
+        "margin-right",
+        "margin-bottom",
+        "margin-left",
+        "margin-inline",
+        "margin-block",
+        null,
         "box-shadow",
         "border",
         "border-radius",
         "box-sizing",
+        null,
         "width",
         "height",
+        "max-width",
+        "max-height",
+        null,
         "padding",
+        "padding-top",
+        "padding-right",
+        "padding-bottom",
+        "padding-left",
+        "padding-inline",
+        "padding-block",
         null,
         // BACKGROUND
         "background",
@@ -68,11 +85,16 @@ function getRuleOrder() {
         const filtered = allCSSProperties.filter((x) => x.startsWith(i));
 
         for (const j of filtered) {
+            if (ruleOrder.includes(j)) {
+                ruleOrder.splice(ruleOrder.indexOf(j), 1);
+            }
             ruleOrder.push(j);
         }
-        if (!ruleOrder.includes(i)) {
-            ruleOrder.push(i);
+
+        if (ruleOrder.includes(i)) {
+            ruleOrder.splice(ruleOrder.indexOf(i), 1);
         }
+        ruleOrder.push(i);
     }
 
     return ruleOrder;
