@@ -1,6 +1,6 @@
 // Got from running
 // Object.values(getComputedStyle(document.body)
-// in the Firefox DevTools console and removing the properties starting with `--` 
+// in the Firefox DevTools console and removing the properties starting with `--`
 
 const rawCSSProperties = [
     "accent-color",
@@ -354,14 +354,14 @@ const rawCSSProperties = [
     "x",
     "y",
     "z-index",
-    "zoom"
-]
+    "zoom",
+];
 
-let allCSSProperties = []
+let allCSSProperties = [];
 
 for (let i of rawCSSProperties) {
-    if (i.split('-').length > 1) {
-        allCSSProperties.push(i.split('-').slice(0, -1).join("-")) // Removes the last part. Example: "abc-def-ghi" would be "abc-def"
+    if (i.split("-").length > 1) {
+        allCSSProperties.push(i.split("-").slice(0, -1).join("-")); // Removes the last part. Example: "abc-def-ghi" would be "abc-def"
     }
     allCSSProperties.push(i);
 }
@@ -369,4 +369,4 @@ for (let i of rawCSSProperties) {
 // Deduplicate CSS properties
 allCSSProperties = [...new Set(allCSSProperties)];
 
-module.exports = allCSSProperties
+module.exports = allCSSProperties;

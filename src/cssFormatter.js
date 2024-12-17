@@ -1,5 +1,5 @@
-const vscode = require('vscode');
-const allCSSProperties = require("./allCSSProperties")
+const vscode = require("vscode");
+const allCSSProperties = require("./allCSSProperties");
 
 function getRuleOrder() {
     // Modified from https://9elements.com/css-rule-order/
@@ -55,50 +55,50 @@ function getRuleOrder() {
         "line-height",
         "word-spacing",
         "color",
-    ]
+    ];
 
-    const ruleOrder = []
+    const ruleOrder = [];
 
     for (const i of original) {
         if (i == null) {
-            ruleOrder.push(null)
-            continue
+            ruleOrder.push(null);
+            continue;
         }
 
-        const filtered = allCSSProperties.filter((x) => x.startsWith(i))
+        const filtered = allCSSProperties.filter((x) => x.startsWith(i));
 
         for (const j of filtered) {
-            ruleOrder.push(j)
+            ruleOrder.push(j);
         }
         if (!ruleOrder.includes(i)) {
-            ruleOrder.push(i)
+            ruleOrder.push(i);
         }
     }
 
-    return ruleOrder
+    return ruleOrder;
 }
 
 function showCSSFormatError(info) {
-    vscode.window.showErrorMessage("CSS was not formatted correctly. Message: " + info)
+    vscode.window.showErrorMessage("CSS was not formatted correctly. Message: " + info);
 }
 
 /**
-     * document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken): 
-     * @param {vscode.TextDocument} document 
-     * @param {vscode.FormattingOptions} options 
-     * @param {vscode.CancellationToken} token 
-     * @returns {vscode.ProviderResult<vscode.TextEdit[]>}
-     */
+ * document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken):
+ * @param {vscode.TextDocument} document
+ * @param {vscode.FormattingOptions} options
+ * @param {vscode.CancellationToken} token
+ * @returns {vscode.ProviderResult<vscode.TextEdit[]>}
+ */
 function provideDocumentFormattingEdits(document, options, token) {
     const editorConfig = vscode.workspace.getConfiguration("editor", document);
     const config = vscode.workspace.getConfiguration("chocotools", document);
 
-    const ruleOrder = getRuleOrder()
+    const ruleOrder = getRuleOrder();
 
-    const edits = []
+    const edits = [];
 
-    const language = document.languageId
-    const htmlLike = language != "css"
+    const language = document.languageId;
+    const htmlLike = language != "css";
 
     let isProcessingCSS = !htmlLike; // Default to true if it is a native CSS file
     let isInRule = false;
@@ -135,8 +135,8 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (trim.endsWith("{")) {
             if (isInRule) {
-                showCSSFormatError("A } is probably missing before a CSS rule")
-                return []
+                showCSSFormatError("A } is probably missing before a CSS rule");
+                return [];
             }
 
             isInRule = true;
@@ -148,8 +148,8 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (trim.endsWith("}")) {
             if (currentComment != "") {
-                restComments.push(currentComment)
-                currentComment = ""
+                restComments.push(currentComment);
+                currentComment = "";
             }
 
             // In addition of ending the rule, add the correct order of rules in here
@@ -158,66 +158,65 @@ function provideDocumentFormattingEdits(document, options, token) {
             let insertText = "";
 
             for (const ruleIndex in ruleOrder) {
-                const rule = ruleOrder[ruleIndex]
+                const rule = ruleOrder[ruleIndex];
 
                 if (rule == null) {
-                    needLineBreak = true
+                    needLineBreak = true;
                 }
 
                 if (properties.hasOwnProperty(rule)) {
                     if (needLineBreak) {
-                        needLineBreak = false
+                        needLineBreak = false;
                         if (insertText != "") {
-                            insertText += "\n"
+                            insertText += "\n";
                         }
                     }
                     if (commentsAttachedToProperties.hasOwnProperty(properties[rule])) {
-                        insertText += commentsAttachedToProperties[properties[rule]] + "\n"
+                        insertText += commentsAttachedToProperties[properties[rule]] + "\n";
                     }
-                    insertText += properties[rule] + "\n"
+                    insertText += properties[rule] + "\n";
                 }
             }
 
             if (insertText != "" && restProperties.length > 0) {
-                insertText += "\n"
+                insertText += "\n";
             }
 
             for (const restProperty of restProperties) {
                 if (commentsAttachedToProperties.hasOwnProperty(restProperty)) {
-                    insertText += commentsAttachedToProperties[restProperty] + "\n"
+                    insertText += commentsAttachedToProperties[restProperty] + "\n";
                 }
-                insertText += restProperty + "\n"
+                insertText += restProperty + "\n";
             }
 
             if (insertText != "" && restComments.length > 0) {
-                insertText += "\n"
+                insertText += "\n";
             }
-    
+
             for (const restComment of restComments) {
-                insertText += restComment + "\n"
+                insertText += restComment + "\n";
             }
 
-            edits.push(vscode.TextEdit.insert(position, insertText))
+            edits.push(vscode.TextEdit.insert(position, insertText));
 
+            isInRule = false;
+            ruleStartLine = null;
 
-            isInRule = false
-            ruleStartLine = null
-
-            properties = {}
-            restProperties = []
+            properties = {};
+            restProperties = [];
 
             continue; // Skip line as else it's processing the "}" line as inside of a rule
         }
 
-        edits.push(vscode.TextEdit.delete(line.rangeIncludingLineBreak))
+        edits.push(vscode.TextEdit.delete(line.rangeIncludingLineBreak));
 
         if (trim == "") continue; // Don't do anything with empty lines
 
         // Comments
         if (trim.startsWith("/*") && !isInComment) {
             if (currentComment != "") {
-                restComments.push(currentComment)
-                currentComment = ""
+                restComments.push(currentComment);
+                currentComment = "";
             }
             isInComment = true;
         }
@@ -228,9 +227,9 @@ function provideDocumentFormattingEdits(document, options, token) {
             }
 
             for (const index in line.text) {
-                const character = line.text[index]
+                const character = line.text[index];
 
-                currentComment += character
+                currentComment += character;
 
                 // This will be the comment end like this: `*/`
                 if (character == "/" && index > 0 && line.text[index - 1] == "*") {
@@ -242,9 +241,9 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         // Properties
         if (currentProperty == null) {
-            currentProperty = line.text.split(':')[0].trim()
+            currentProperty = line.text.split(":")[0].trim();
         } else {
-            currentPropertyFull += "\n"
+            currentPropertyFull += "\n";
         }
 
         let endOfLine = false;
@@ -260,8 +259,8 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (endOfLine) {
             if (currentComment != "") {
-                commentsAttachedToProperties[currentPropertyFull] = currentComment
-                currentComment = ""
+                commentsAttachedToProperties[currentPropertyFull] = currentComment;
+                currentComment = "";
             }
             if (ruleOrder.includes(currentProperty)) {
                 properties[currentProperty] = currentPropertyFull;
@@ -271,43 +270,45 @@ function provideDocumentFormattingEdits(document, options, token) {
             currentPropertyFull = "";
             currentProperty = null;
         }
-
-
     }
 
     if (htmlLike && isProcessingCSS) {
-        showCSSFormatError("The </style> tag is missing")
-        return []
+        showCSSFormatError("The </style> tag is missing");
+        return [];
     }
 
     if (isInRule) {
-        showCSSFormatError("The } is missing at the end of the CSS style")
-        return []
+        showCSSFormatError("The } is missing at the end of the CSS style");
+        return [];
     }
 
     // Run Prettier after formatting the document
     if (config.get("runPrettier")) {
         setTimeout(async () => {
-            const hasPrettier = (await vscode.commands.getCommands(true)).includes("prettier.forceFormatDocument")
+            const hasPrettier = (await vscode.commands.getCommands(true)).includes(
+                "prettier.forceFormatDocument"
+            );
             if (!hasPrettier) return;
 
-            await vscode.commands.executeCommand("prettier.forceFormatDocument")
+            await vscode.commands.executeCommand("prettier.forceFormatDocument");
             if (editorConfig.get("formatOnSave")) {
-                await vscode.commands.executeCommand("workbench.action.files.saveWithoutFormatting");
+                await vscode.commands.executeCommand(
+                    "workbench.action.files.saveWithoutFormatting"
+                );
             }
         }, 50);
     }
 
-    return edits
+    return edits;
 }
 
 /**
  * @type {vscode.DocumentFormattingEditProvider}
  */
 const formattingProviderCSS = {
-    provideDocumentFormattingEdits
-}
+    provideDocumentFormattingEdits,
+};
 
 module.exports = {
-    formattingProviderCSS
-}
+    formattingProviderCSS,
+};
