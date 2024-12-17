@@ -3,10 +3,13 @@ const allCSSProperties = require("./allCSSProperties")
 
 function getRuleOrder() {
     // Modified from https://9elements.com/css-rule-order/
-    const original = ["content",
+    const original = [
+        // GENERATED CONTENT
+        "content",
         null,
-        "position",
+        // POSITION AND LAYOUT
         "z-index",
+        "position",
         "top",
         "bottom",
         "left",
@@ -14,18 +17,25 @@ function getRuleOrder() {
         "float",
         "clear",
         null,
+        // DISPLAY AND VISIBILITY
         "display",
+        "justify-content",
+        "align-items",
+        "align-self",
         "opacity",
         "transform",
         null,
         "flex",
+        // CLIPPING
         null,
         "overflow",
         "clip",
         null,
+        // ANIMATION
         "animation",
         "transition",
         null,
+        // BOX MODEL (FROM OUTSIDE IN)
         "margin",
         "box-shadow",
         "border",
@@ -35,12 +45,16 @@ function getRuleOrder() {
         "height",
         "padding",
         null,
+        // BACKGROUND
         "background",
         "cursor",
         null,
+        // TYPOGHRAPHY
         "font",
+        "text",
         "line-height",
         "word-spacing",
+        "color",
     ]
 
     const ruleOrder = []
