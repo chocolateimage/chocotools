@@ -108,6 +108,11 @@ function provideDocumentFormattingEdits(document, options, token) {
     let currentProperty = null;
     let currentPropertyFull = "";
 
+    let isInComment = false;
+    let commentsAttachedToProperties = {};
+    let restComments = [];
+    let currentComment = "";
+
     for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
         const line = document.lineAt(lineIndex);
         const trim = line.text.trim();
@@ -128,8 +133,6 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (!isProcessingCSS) continue;
 
-        // TODO: Handle comments
-
         if (trim.endsWith("{")) {
             if (isInRule) {
                 showCSSFormatError("A } is probably missing before a CSS rule")
@@ -144,6 +147,11 @@ function provideDocumentFormattingEdits(document, options, token) {
         if (!isInRule) continue;
 
         if (trim.endsWith("}")) {
+            if (currentComment != "") {
+                restComments.push(currentComment)
+                currentComment = ""
+            }
+
             // In addition of ending the rule, add the correct order of rules in here
             const position = ruleStartLine.rangeIncludingLineBreak.end;
             let needLineBreak = false;
@@ -163,16 +171,30 @@ function provideDocumentFormattingEdits(document, options, token) {
                             insertText += "\n"
                         }
                     }
+                    if (commentsAttachedToProperties.hasOwnProperty(properties[rule])) {
+                        insertText += commentsAttachedToProperties[properties[rule]] + "\n"
+                    }
                     insertText += properties[rule] + "\n"
                 }
             }
 
-            if (Object.keys(properties).length > 0 && restProperties.length > 0) {
+            if (insertText != "" && restProperties.length > 0) {
                 insertText += "\n"
             }
 
             for (const restProperty of restProperties) {
+                if (commentsAttachedToProperties.hasOwnProperty(restProperty)) {
+                    insertText += commentsAttachedToProperties[restProperty] + "\n"
+                }
                 insertText += restProperty + "\n"
+            }
+
+            if (insertText != "" && restComments.length > 0) {
+                insertText += "\n"
+            }
+    
+            for (const restComment of restComments) {
+                insertText += restComment + "\n"
             }
 
             edits.push(vscode.TextEdit.insert(position, insertText))
@@ -191,6 +213,34 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (trim == "") continue; // Don't do anything with empty lines
 
+        // Comments
+        if (trim.startsWith("/*") && !isInComment) {
+            if (currentComment != "") {
+                restComments.push(currentComment)
+                currentComment = ""
+            }
+            isInComment = true;
+        }
+
+        if (isInComment) {
+            if (currentComment != "") {
+                currentComment += "\n"; // For multiline comments add a newline
+            }
+
+            for (const index in line.text) {
+                const character = line.text[index]
+
+                currentComment += character
+
+                // This will be the comment end like this: `*/`
+                if (character == "/" && index > 0 && line.text[index - 1] == "*") {
+                    isInComment = false;
+                }
+            }
+            continue;
+        }
+
+        // Properties
         if (currentProperty == null) {
             currentProperty = line.text.split(':')[0].trim()
         } else {
@@ -209,6 +259,10 @@ function provideDocumentFormattingEdits(document, options, token) {
         }
 
         if (endOfLine) {
+            if (currentComment != "") {
+                commentsAttachedToProperties[currentPropertyFull] = currentComment
+                currentComment = ""
+            }
             if (ruleOrder.includes(currentProperty)) {
                 properties[currentProperty] = currentPropertyFull;
             } else {
