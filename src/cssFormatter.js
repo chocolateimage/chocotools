@@ -68,7 +68,7 @@ function getRuleOrder() {
         "background",
         "cursor",
         null,
-        // TYPOGHRAPHY
+        // TYPOGRAPHY
         "font",
         "text",
         "line-height",
