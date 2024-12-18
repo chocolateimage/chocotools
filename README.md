@@ -14,4 +14,6 @@ The CSS orderer is available as a formatter:
 },
 ```
 
-It uses [9elements' CSS rule order](https://9elements.com/css-rule-order/) and supports CSS, HTML and Vue files
+It uses [9elements' CSS rule order](https://9elements.com/css-rule-order/) and supports CSS, HTML and Vue files.
+
+If Prettier is installed, it will be automatically formatted with Prettier too and can be disabled in the [settings](vscode://settings/chocotools.runPrettier) as `chocotools.runPrettier`.
