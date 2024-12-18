@@ -139,7 +139,10 @@ function provideDocumentFormattingEdits(document, options, token) {
         if (currentProperty == null) return;
 
         // In case the rule wasn't ended correctly a semicolon is added
-        if (!currentPropertyFull.endsWith(";")) {
+        if (
+            !currentPropertyFull.trim().endsWith(";") &&
+            !currentPropertyFull.trim().endsWith("*/")
+        ) {
             currentPropertyFull += ";";
         }
 
@@ -176,7 +179,7 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (!isProcessingCSS) continue;
 
-        if (trim.endsWith("{")) {
+        if (trim.endsWith("{") && !isInComment) {
             if (isInRule) {
                 showCSSFormatError("A } is probably missing before a CSS rule");
                 return [];
@@ -189,7 +192,7 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (!isInRule) continue;
 
-        if (trim.endsWith("}")) {
+        if (trim.endsWith("}") && !isInComment) {
             endOfRule();
 
             if (currentComment != "") {
@@ -255,7 +258,7 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         edits.push(vscode.TextEdit.delete(line.rangeIncludingLineBreak));
 
-        if (trim == "") continue; // Don't do anything with empty lines
+        if (trim == "" && !isInComment) continue; // Don't do anything with empty lines
 
         // Comments
         if (trim.startsWith("/*") && !isInComment) {
@@ -305,6 +308,11 @@ function provideDocumentFormattingEdits(document, options, token) {
         if (endOfLine) {
             endOfRule();
         }
+    }
+
+    if (isInComment) {
+        showCSSFormatError("A comment was not closed correctly");
+        return [];
     }
 
     if (htmlLike && isProcessingCSS) {
