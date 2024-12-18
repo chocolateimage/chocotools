@@ -49,6 +49,8 @@ function getRuleOrder() {
         "border-radius",
         "box-sizing",
         null,
+        "min-width",
+        "min-height",
         "width",
         "height",
         "max-width",
