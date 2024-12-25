@@ -109,7 +109,7 @@ function provideDocumentFormattingEdits(document, options, token) {
 
         if (!isProcessingCSS) continue;
 
-        if (trim.endsWith("{") && !isInComment) {
+        if (trim.endsWith("{") && !trim.startsWith("@") && !isInComment) {
             if (isInRule) {
                 showCSSFormatError("A } is probably missing before a CSS rule");
                 return [];
