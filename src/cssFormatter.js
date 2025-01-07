@@ -204,7 +204,7 @@ function provideDocumentFormattingEdits(document, options, token) {
                 currentComment += "\n"; // For multiline comments add a newline
             }
 
-            for (const index in line.text) {
+            for (let index = 0; index < line.text.length; index++) {
                 const character = line.text[index];
 
                 currentComment += character;
