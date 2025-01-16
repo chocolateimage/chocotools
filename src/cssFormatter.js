@@ -182,6 +182,8 @@ function provideDocumentFormattingEdits(document, options, token) {
 
             properties = {};
             restProperties = [];
+            restComments = [];
+            commentsAttachedToProperties = {};
 
             continue; // Skip line as else it's processing the "}" line as inside of a rule
         }
