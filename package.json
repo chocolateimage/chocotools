@@ -21,10 +21,16 @@
   ],
   "main": "./src/extension.js",
   "contributes": {
-    "commands": [{
-      "command": "chocotools.convertCJSToESM",
-      "title": "Convert current file from CommonJS to ESM"
-    }],
+    "commands": [
+      {
+        "command": "chocotools.convertCJSToESM",
+        "title": "Convert current file from CommonJS to ESM"
+      },
+      {
+        "command": "chocotools.gitPrefixEdit",
+        "title": "Edit Git commit message prefix"
+      }
+    ],
     "configuration": {
       "title": "Choco Tools",
       "properties": {
@@ -33,10 +39,26 @@
           "default": true,
           "description": "Runs Prettier after formatting if installed",
           "scope": "language-overridable"
+        },
+        "chocotools.newGitPrefixAskAutomatically": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically ask if a Git commit message prefix could be created from the branch name"
         }
       }
+    },
+    "menus": {
+      "scm/title": [
+        {
+          "command": "chocotools.gitPrefixEdit",
+          "when": "scmProvider == git"
+        }
+      ]
     }
   },
+  "extensionDependencies": [
+    "vscode.git"
+  ],
   "scripts": {
     "lint": "eslint ."
   },
