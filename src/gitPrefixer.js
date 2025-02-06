@@ -17,7 +17,7 @@ function registerGitPrefixer(context) {
 
     function onInputChange(repo) {
         const prefix = context.globalState.get(getGlobalStateKeyForBranch(repo));
-        if (prefix == null) return;
+        if (prefix == null || prefix == "") return;
         const inputBoxValue = repo.inputBox.value;
         if (inputBoxValue.length == 1) {
             repo.inputBox.value = prefix + inputBoxValue;
