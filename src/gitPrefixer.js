@@ -6,6 +6,7 @@ const vscode = require("vscode");
 function registerGitPrefixer(context) {
     const gitExtension = vscode.extensions.getExtension("vscode.git").exports;
     const git = gitExtension.getAPI(1);
+    const registeredRepositoryInterval = {};
 
     function getKeyForBranch(repo) {
         return repo.rootUri.toString() + ":" + repo.state.HEAD.name;
@@ -59,8 +60,40 @@ function registerGitPrefixer(context) {
     }
 
     function registerRepository(repo) {
-        context.subscriptions.push(repo.repository.inputBox.onDidChange(() => onInputChange(repo)));
+        /* I hate Microsoft, sadly they removed access to the internal inputBox in commit
+         *
+         * https://github.com/microsoft/vscode/commit/777fd07cccc3de449e529c9f701c2cfdd36ecb3e
+         *
+         * so we can't detect changes directly (with repo.repository.inputBox.onDidChange)
+         * and have to do this fucking hacky workaround until someone finds out a better way.
+         */
+
+        let lastValue = null;
+        const checkInterval = setInterval(() => {
+            try {
+                const value = repo.inputBox.value;
+                if (lastValue == value) return;
+                lastValue = value;
+
+                // Make sure we handle a potential error separately so we don't cancel the check interval
+                try {
+                    onInputChange(repo);
+                } catch (error) {
+                    console.error(error);
+                }
+            } catch (error) {
+                console.warn(error);
+                clearInterval(checkInterval);
+            }
+        }, 70);
+        registeredRepositoryInterval[repo.rootUri.toString()] = checkInterval;
         context.subscriptions.push(repo.onDidCommit(() => onDidCommit(repo)));
+    }
+    function unregisterRepository(repo) {
+        const checkInterval = registeredRepositoryInterval[repo.rootUri.toString()];
+        if (checkInterval != null) {
+            clearInterval(checkInterval);
+        }
     }
 
     async function gitPrefixEditCommand() {
@@ -80,6 +113,9 @@ function registerGitPrefixer(context) {
 
     git.onDidOpenRepository((repo) => {
         registerRepository(repo);
+    });
+    git.onDidCloseRepository((repo) => {
+        unregisterRepository(repo);
     });
     for (const repo of git.repositories) {
         registerRepository(repo);
