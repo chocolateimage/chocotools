@@ -1,5 +1,9 @@
 # Choco Tools
 
+## Installation
+
+You can get this extension on the [VS Code marketplace](https://marketplace.visualstudio.com/items?itemName=chocolateimage.chocotools) and on [OpenVSX](https://open-vsx.org/extension/chocolateimage/chocotools).
+
 ## CJS to ESM converter
 
 Open your command palette (<kbd>CTRL</kbd> + <kbd>SHIFT</kbd> + <kbd>P</kbd>) then execute "Convert current file from CommonJS to ESM", this will change the imports and exports of your file from CommonJS (`require()`) to ESM `import ""`.
