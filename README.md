@@ -6,10 +6,16 @@ Open your command palette (<kbd>CTRL</kbd> + <kbd>SHIFT</kbd> + <kbd>P</kbd>) th
 
 ## CSS orderer
 
-The CSS orderer is available as a formatter:
+The CSS orderer is available as a formatter, to use it add what you need to your project's settings.json:
 
 ```json
+"[html]": {
+    "editor.defaultFormatter": "chocolateimage.chocotools"
+},
 "[css]": {
+    "editor.defaultFormatter": "chocolateimage.chocotools"
+},
+"[vue]": {
     "editor.defaultFormatter": "chocolateimage.chocotools"
 },
 ```
