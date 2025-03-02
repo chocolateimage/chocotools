@@ -64,6 +64,7 @@ function provideDocumentFormattingEdits(document, options, token) {
     let commentsAttachedToProperties = {};
     let restComments = [];
     let currentComment = "";
+    let variables = [];
 
     function endOfRule() {
         if (currentProperty == null) return;
@@ -80,7 +81,9 @@ function provideDocumentFormattingEdits(document, options, token) {
             commentsAttachedToProperties[currentPropertyFull] = currentComment;
             currentComment = "";
         }
-        if (ruleOrder.includes(currentProperty)) {
+        if (currentProperty.startsWith("--")) {
+            variables.push(currentPropertyFull);
+        } else if (ruleOrder.includes(currentProperty)) {
             properties[currentProperty] = currentPropertyFull;
         } else {
             restProperties.push(currentPropertyFull);
@@ -135,6 +138,10 @@ function provideDocumentFormattingEdits(document, options, token) {
             let needLineBreak = false;
             let insertText = "";
 
+            for (const variable of variables) {
+                insertText += variable + "\n";
+            }
+
             for (const ruleIndex in ruleOrder) {
                 const rule = ruleOrder[ruleIndex];
 
@@ -184,6 +191,7 @@ function provideDocumentFormattingEdits(document, options, token) {
             restProperties = [];
             restComments = [];
             commentsAttachedToProperties = {};
+            variables = [];
 
             continue; // Skip line as else it's processing the "}" line as inside of a rule
         }
