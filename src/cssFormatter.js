@@ -34,6 +34,51 @@ function showCSSFormatError(info) {
     vscode.window.showErrorMessage("CSS was not formatted correctly. Message: " + info);
 }
 
+function provideDocumentFormattingEdits(document, options, token) {
+    try {
+        return _provideDocumentFormattingEdits(document, options, token);
+    } catch (error) {
+        const body = `## Minimum reproducible example
+
+<!--
+
+    Below this comment, enter a minimum reproducible example that will also trigger an error.
+
+-->
+
+\`\`\`css
+
+
+\`\`\`
+
+## Stack trace
+
+\`\`\`
+${error.stack}
+\`\`\`
+`;
+        const uri =
+            "https://github.com/chocolateimage/chocotools/issues/new?title=" +
+            encodeURIComponent(error.message) +
+            "&body=" +
+            encodeURIComponent(body);
+        vscode.window
+            .showErrorMessage(
+                "Could not format document due to an internal error. Please open an issue on GitHub",
+                "Report Issue..."
+            )
+            .then((value) => {
+                if (value == "Report Issue...") {
+                    vscode.env.openExternal(uri);
+                }
+            });
+
+        console.error(error.stack);
+
+        return [];
+    }
+}
+
 /**
  * document: vscode.TextDocument, options: vscode.FormattingOptions, token: vscode.CancellationToken):
  * @param {vscode.TextDocument} document
@@ -41,7 +86,7 @@ function showCSSFormatError(info) {
  * @param {vscode.CancellationToken} token
  * @returns {vscode.ProviderResult<vscode.TextEdit[]>}
  */
-function provideDocumentFormattingEdits(document, options, token) {
+function _provideDocumentFormattingEdits(document, options, token) {
     const editorConfig = vscode.workspace.getConfiguration("editor", document);
     const config = vscode.workspace.getConfiguration("chocotools", document);
 
