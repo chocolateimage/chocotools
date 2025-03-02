@@ -15,9 +15,11 @@ const rawRuleOrder = [
     // DISPLAY AND VISIBILITY
     "display",
     "flex",
+    "grid",
     "justify-content",
     "align-items",
     "align-self",
+    "gap",
     null,
     "opacity",
     "transform",
