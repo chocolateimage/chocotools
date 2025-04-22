@@ -2,7 +2,7 @@
   "name": "chocotools",
   "displayName": "Choco Tools",
   "description": "Useful tools that are developed by chocolateimage",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "chocolateimage",
   "engines": {
     "vscode": "^1.96.0"
