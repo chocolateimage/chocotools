@@ -137,6 +137,75 @@ function _provideDocumentFormattingEdits(document, options, token) {
         currentProperty = null;
     }
 
+    function endRuleGroup() {
+        endOfRule();
+
+        if (currentComment != "") {
+            restComments.push(currentComment);
+            currentComment = "";
+        }
+
+        // In addition of ending the rule, add the correct order of rules in here
+        const position = ruleStartLine.rangeIncludingLineBreak.end;
+        let needLineBreak = false;
+        let insertText = "";
+
+        for (const variable of variables) {
+            insertText += variable + "\n";
+        }
+
+        for (const ruleIndex in ruleOrder) {
+            const rule = ruleOrder[ruleIndex];
+
+            if (rule == null) {
+                needLineBreak = true;
+            }
+
+            if (properties.hasOwnProperty(rule)) {
+                if (needLineBreak) {
+                    needLineBreak = false;
+                    if (insertText != "") {
+                        insertText += "\n";
+                    }
+                }
+                if (commentsAttachedToProperties.hasOwnProperty(properties[rule])) {
+                    insertText += commentsAttachedToProperties[properties[rule]] + "\n";
+                }
+                insertText += properties[rule] + "\n";
+            }
+        }
+
+        if (insertText != "" && restProperties.length > 0) {
+            insertText += "\n";
+        }
+
+        for (const restProperty of restProperties) {
+            if (commentsAttachedToProperties.hasOwnProperty(restProperty)) {
+                insertText += commentsAttachedToProperties[restProperty] + "\n";
+            }
+            insertText += restProperty + "\n";
+        }
+
+        if (insertText != "" && restComments.length > 0) {
+            insertText += "\n";
+        }
+
+        for (const restComment of restComments) {
+            insertText += restComment + "\n";
+        }
+
+        edits.push(vscode.TextEdit.insert(position, insertText));
+
+        isInRule = false;
+        ruleStartLine = null;
+
+        properties = {};
+        restProperties = [];
+        restComments = [];
+        commentsAttachedToProperties = {};
+        variables = [];
+    }
+
     for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
         const line = document.lineAt(lineIndex);
         const trim = line.text.trim();
@@ -159,8 +228,8 @@ function _provideDocumentFormattingEdits(document, options, token) {
 
         if (trim.endsWith("{") && !trim.startsWith("@") && !isInComment) {
             if (isInRule) {
-                showCSSFormatError("A } is probably missing before a CSS rule");
-                return [];
+                endRuleGroup();
+                edits.push(vscode.TextEdit.insert(line.range.start, "\n"));
             }
 
             isInRule = true;
@@ -170,73 +239,8 @@ function _provideDocumentFormattingEdits(document, options, token) {
 
         if (!isInRule) continue;
 
-        if (trim.endsWith("}") && !isInComment) {
-            endOfRule();
-
-            if (currentComment != "") {
-                restComments.push(currentComment);
-                currentComment = "";
-            }
-
-            // In addition of ending the rule, add the correct order of rules in here
-            const position = ruleStartLine.rangeIncludingLineBreak.end;
-            let needLineBreak = false;
-            let insertText = "";
-
-            for (const variable of variables) {
-                insertText += variable + "\n";
-            }
-
-            for (const ruleIndex in ruleOrder) {
-                const rule = ruleOrder[ruleIndex];
-
-                if (rule == null) {
-                    needLineBreak = true;
-                }
-
-                if (properties.hasOwnProperty(rule)) {
-                    if (needLineBreak) {
-                        needLineBreak = false;
-                        if (insertText != "") {
-                            insertText += "\n";
-                        }
-                    }
-                    if (commentsAttachedToProperties.hasOwnProperty(properties[rule])) {
-                        insertText += commentsAttachedToProperties[properties[rule]] + "\n";
-                    }
-                    insertText += properties[rule] + "\n";
-                }
-            }
-
-            if (insertText != "" && restProperties.length > 0) {
-                insertText += "\n";
-            }
-
-            for (const restProperty of restProperties) {
-                if (commentsAttachedToProperties.hasOwnProperty(restProperty)) {
-                    insertText += commentsAttachedToProperties[restProperty] + "\n";
-                }
-                insertText += restProperty + "\n";
-            }
-
-            if (insertText != "" && restComments.length > 0) {
-                insertText += "\n";
-            }
-
-            for (const restComment of restComments) {
-                insertText += restComment + "\n";
-            }
-
-            edits.push(vscode.TextEdit.insert(position, insertText));
-
-            isInRule = false;
-            ruleStartLine = null;
-
-            properties = {};
-            restProperties = [];
-            restComments = [];
-            commentsAttachedToProperties = {};
-            variables = [];
+        if ((trim.endsWith("{") || trim.endsWith("}")) && !isInComment) {
+            endRuleGroup();
 
             continue; // Skip line as else it's processing the "}" line as inside of a rule
         }
