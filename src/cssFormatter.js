@@ -151,6 +151,9 @@ function _provideDocumentFormattingEdits(document, options, token) {
         let insertText = "";
 
         for (const variable of variables) {
+            if (commentsAttachedToProperties.hasOwnProperty(variable)) {
+                insertText += commentsAttachedToProperties[variable] + "\n";
+            }
             insertText += variable + "\n";
         }
 
