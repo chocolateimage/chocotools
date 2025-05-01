@@ -1,5 +1,5 @@
 // Got from running
-// Object.values(getComputedStyle(document.body)
+// Object.values(getComputedStyle(document.body))
 // in the Firefox DevTools console and removing the properties starting with `--`
 
 const rawCSSProperties = [
@@ -163,6 +163,7 @@ const rawCSSProperties = [
     "grid-template-rows",
     "height",
     "hyphenate-character",
+    "hyphenate-limit-chars",
     "hyphens",
     "image-orientation",
     "image-rendering",
