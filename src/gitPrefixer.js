@@ -28,6 +28,28 @@ function registerGitPrefixer(context) {
             repo.inputBox.value = inputBoxValue.substring(prefix.length - 1);
         }
     }
+
+    /**
+     * @param {vscode.TextEditor} editor
+     */
+    function onDidChangeActiveTextEditor(editor) {
+        if (!editor) return;
+        if (!editor.document) return;
+        if (editor.document.languageId !== "git-commit") return;
+
+        const line = editor.document.lineAt(0);
+        if (line.text !== "") return;
+
+        const repo = git.repositories[0];
+
+        const prefix = context.globalState.get(getGlobalStateKeyForBranch(repo));
+        if (prefix == null || prefix == "") return;
+
+        editor.edit((editBuild) => {
+            editBuild.insert(line.range.start, prefix);
+        });
+    }
+
     async function onDidCommit(repo) {
         const config = vscode.workspace.getConfiguration("chocotools");
         if (!config.get("newGitPrefixAskAutomatically")) return;
@@ -123,6 +145,10 @@ function registerGitPrefixer(context) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand("chocotools.gitPrefixEdit", gitPrefixEditCommand)
+    );
+
+    context.subscriptions.push(
+        vscode.window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor)
     );
 }
 
