@@ -50,7 +50,18 @@ function registerGitPrefixer(context) {
         });
     }
 
-    async function onDidCommit(repo) {
+    function commitPrefixValidation(value) {
+        if (value.length > 0) {
+            return {
+                severity: vscode.InputBoxValidationSeverity.Info,
+                message: `Example: ${value}Commit message`,
+            };
+        }
+
+        return null;
+    }
+
+    async function askCommitPrefix(repo) {
         const config = vscode.workspace.getConfiguration("chocotools");
         if (!config.get("newGitPrefixAskAutomatically")) return;
         const key = getGlobalStateKeyForBranch(repo);
@@ -62,7 +73,11 @@ function registerGitPrefixer(context) {
         let prefix = branchName.split("--")[0];
         prefix += ": ";
         const response = await vscode.window.showInformationMessage(
-            'Do you want to use the prefix "' + prefix + '" for the branch "' + branchName + '"?',
+            'Do you want to use the commit prefix "' +
+                prefix +
+                '" for the branch "' +
+                branchName +
+                '"?',
 
             "Use",
             "Edit and use",
@@ -74,10 +89,11 @@ function registerGitPrefixer(context) {
             const newPrefix = await vscode.window.showInputBox({
                 title: 'Enter a prefix for the branch "' + branchName + '"',
                 value: prefix,
+                validateInput: commitPrefixValidation,
             });
             context.globalState.update(key, newPrefix);
         } else if (response == "Never show again") {
-            config.update("newGitPrefixAskAutomatically", false);
+            config.update("newGitPrefixAskAutomatically", false, vscode.ConfigurationTarget.Global);
         }
     }
 
@@ -109,7 +125,7 @@ function registerGitPrefixer(context) {
             }
         }, 70);
         registeredRepositoryInterval[repo.rootUri.toString()] = checkInterval;
-        context.subscriptions.push(repo.onDidCommit(() => onDidCommit(repo)));
+        context.subscriptions.push(repo.onDidCheckout(() => askCommitPrefix(repo)));
     }
     function unregisterRepository(repo) {
         const checkInterval = registeredRepositoryInterval[repo.rootUri.toString()];
@@ -128,6 +144,7 @@ function registerGitPrefixer(context) {
             title:
                 'Enter a prefix for the branch "' + branchName + '", leave it empty for no prefix',
             value: prefix,
+            validateInput: commitPrefixValidation,
         });
         if (newPrefix == null) return;
         context.globalState.update(key, newPrefix != "" ? newPrefix : null);
