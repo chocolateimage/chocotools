@@ -30,4 +30,4 @@ If Prettier is installed, it will be automatically formatted with Prettier too a
 
 ## Automatic Git commit message prefixer
 
-If you commit on a branch with double dashes, for example `TICKET-1234--Broken-link`, Choco Tools will automatically ask you if you want to have `TICKET-1234: ` as a Git commit message prefix so if you try to type a commit message it will automatically add the prefix.
+If you checkout on a branch with double dashes, for example `TICKET-1234--Broken-link`, Choco Tools will automatically ask you if you want to have `TICKET-1234: ` as a Git commit message prefix. So if you try to type a commit message it will automatically add the prefix.
