@@ -71,6 +71,7 @@ function registerGitPrefixer(context) {
         const branchName = repo.state.HEAD.name;
         if (!branchName.includes("--")) return;
         let prefix = branchName.split("--")[0];
+        prefix = prefix.split("/").at(-1);
         prefix += ": ";
         const response = await vscode.window.showInformationMessage(
             'Do you want to use the commit prefix "' +
