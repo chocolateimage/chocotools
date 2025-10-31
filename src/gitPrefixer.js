@@ -7,6 +7,7 @@ function registerGitPrefixer(context) {
     const gitExtension = vscode.extensions.getExtension("vscode.git").exports;
     const git = gitExtension.getAPI(1);
     const registeredRepositoryInterval = {};
+    const repositoryLastBranches = {};
 
     function getKeyForBranch(repo) {
         return repo.rootUri.toString() + ":" + repo.state.HEAD.name;
@@ -98,6 +99,18 @@ function registerGitPrefixer(context) {
         }
     }
 
+    function checkForChanges(repo) {
+        const currentBrach = repo.state.HEAD.name;
+        const lastBranch = repositoryLastBranches[repo];
+
+        if (currentBrach == lastBranch) return;
+        repositoryLastBranches[repo] = currentBrach;
+
+        if (lastBranch == undefined) return; // Do not show commit message for fresh starts.
+
+        askCommitPrefix(repo);
+    }
+
     function registerRepository(repo) {
         /* I hate Microsoft, sadly they removed access to the internal inputBox in commit
          *
@@ -126,8 +139,9 @@ function registerGitPrefixer(context) {
             }
         }, 70);
         registeredRepositoryInterval[repo.rootUri.toString()] = checkInterval;
-        context.subscriptions.push(repo.onDidCheckout(() => askCommitPrefix(repo)));
+        context.subscriptions.push(repo.state.onDidChange(() => checkForChanges(repo)));
     }
+
     function unregisterRepository(repo) {
         const checkInterval = registeredRepositoryInterval[repo.rootUri.toString()];
         if (checkInterval != null) {
