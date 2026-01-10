@@ -99,6 +99,7 @@ function _provideDocumentFormattingEdits(document, options, token) {
 
     let isProcessingCSS = !htmlLike; // Default to true if it is a native CSS file
     let isInRule = false;
+    let ruleDefinitionStartLine = null;
     let ruleStartLine = null;
     let properties = {};
     let restProperties = [];
@@ -232,15 +233,28 @@ function _provideDocumentFormattingEdits(document, options, token) {
         if (trim.endsWith("{") && !trim.startsWith("@") && !isInComment) {
             if (isInRule) {
                 endRuleGroup();
-                edits.push(vscode.TextEdit.insert(line.range.start, "\n"));
+
+                if (ruleDefinitionStartLine != null) {
+                    edits.push(vscode.TextEdit.insert(ruleDefinitionStartLine.range.start, "\n"));
+                } else {
+                    edits.push(vscode.TextEdit.insert(line.range.start, "\n"));
+                }
             }
 
+            ruleDefinitionStartLine = null;
             isInRule = true;
             ruleStartLine = line;
             continue; // Skip line as else it's processing the "<selector> {" line as inside of a rule
         }
 
         if (!isInRule) continue;
+
+        if (trim.endsWith(",") || trim.endsWith(">")) {
+            if (ruleDefinitionStartLine == null) {
+                ruleDefinitionStartLine = line;
+            }
+            continue;
+        }
 
         if ((trim.endsWith("{") || trim.endsWith("}")) && !isInComment) {
             endRuleGroup();
