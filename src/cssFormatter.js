@@ -208,6 +208,10 @@ function _provideDocumentFormattingEdits(document, options, token) {
         restComments = [];
         commentsAttachedToProperties = {};
         variables = [];
+
+        return {
+            hadText: insertText.length > 0,
+        };
     }
 
     for (let lineIndex = 0; lineIndex < document.lineCount; lineIndex++) {
@@ -232,12 +236,16 @@ function _provideDocumentFormattingEdits(document, options, token) {
 
         if (trim.endsWith("{") && !trim.startsWith("@") && !isInComment) {
             if (isInRule) {
-                endRuleGroup();
+                const result = endRuleGroup();
 
-                if (ruleDefinitionStartLine != null) {
-                    edits.push(vscode.TextEdit.insert(ruleDefinitionStartLine.range.start, "\n"));
-                } else {
-                    edits.push(vscode.TextEdit.insert(line.range.start, "\n"));
+                if (result.hadText) {
+                    if (ruleDefinitionStartLine != null) {
+                        edits.push(
+                            vscode.TextEdit.insert(ruleDefinitionStartLine.range.start, "\n")
+                        );
+                    } else {
+                        edits.push(vscode.TextEdit.insert(line.range.start, "\n"));
+                    }
                 }
             }
 
