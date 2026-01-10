@@ -249,7 +249,7 @@ function _provideDocumentFormattingEdits(document, options, token) {
 
         if (!isInRule) continue;
 
-        if (trim.endsWith(",") || trim.endsWith(">")) {
+        if (currentProperty == null && (trim.endsWith(",") || trim.endsWith(">"))) {
             if (ruleDefinitionStartLine == null) {
                 ruleDefinitionStartLine = line;
             }
