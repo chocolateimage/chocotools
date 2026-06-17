@@ -65,7 +65,7 @@ ${error.stack}
         vscode.window
             .showErrorMessage(
                 "Could not format document due to an internal error. Please open an issue on GitHub",
-                "Report Issue..."
+                "Report Issue...",
             )
             .then((value) => {
                 if (value == "Report Issue...") {
@@ -225,7 +225,7 @@ function _provideDocumentFormattingEdits(document, options, token) {
                     continue;
                 }
             } else {
-                if (trim.startsWith("<style") && trim.endsWith(">")) {
+                if (trim.startsWith("<style") && trim.endsWith(">") && !trim.includes("</style>")) {
                     isProcessingCSS = true;
                     continue; // Skip line as else it's processing the "<style>" line as CSS
                 }
@@ -241,7 +241,7 @@ function _provideDocumentFormattingEdits(document, options, token) {
                 if (result.hadText) {
                     if (ruleDefinitionStartLine != null) {
                         edits.push(
-                            vscode.TextEdit.insert(ruleDefinitionStartLine.range.start, "\n")
+                            vscode.TextEdit.insert(ruleDefinitionStartLine.range.start, "\n"),
                         );
                     } else {
                         edits.push(vscode.TextEdit.insert(line.range.start, "\n"));
@@ -343,14 +343,14 @@ function _provideDocumentFormattingEdits(document, options, token) {
     if (config.get("runPrettier")) {
         setTimeout(async () => {
             const hasPrettier = (await vscode.commands.getCommands(true)).includes(
-                "prettier.forceFormatDocument"
+                "prettier.forceFormatDocument",
             );
             if (!hasPrettier) return;
 
             await vscode.commands.executeCommand("prettier.forceFormatDocument");
             if (editorConfig.get("formatOnSave")) {
                 await vscode.commands.executeCommand(
-                    "workbench.action.files.saveWithoutFormatting"
+                    "workbench.action.files.saveWithoutFormatting",
                 );
             }
         }, 50);
